@@ -1,23 +1,27 @@
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
+from vector import retriever
 
-
-model = OllamaLLM(model="llama3.2")
+model = OllamaLLM(model="llama3.2:latest")
 
 template = """
-You are an expert in answering questions about a pizza restaurant
+    You are an expert in answering questions about a pizza restaurant.
 
-Here are some relevant reviews: {reviews}
+    Here are some relevant reviews: {reviews}
 
-Here is the question: {question}
+    Here is the question to answer: {question}
 """
-
 prompt = ChatPromptTemplate.from_template(template)
 chain = prompt | model
 
 while True:
-    question = input("Enter your question (or 'q' to quit): ")
-    if question.lower() == 'q':
+    print("\n\n-------------------------------")
+    question = input("Ask your question (q to quit): ")
+    print("\n\n")
+    if question == "q":
         break
-    result = chain.invoke({"reviews": [], "question": question})
-    print(result)
+
+    reviews = retriever.invoke(question)
+    reviews_text = "\n\n".join([doc.page_content for doc in reviews])
+    result = chain.invoke({"reviews": reviews_text, "question": question})
+    print("Result", result)

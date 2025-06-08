@@ -1,2 +1,5 @@
 # Environments
 .venv
+
+#DBs
+chroma_langchain_db

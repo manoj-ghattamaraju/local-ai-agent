@@ -17,23 +17,25 @@ if add_documents:
     for i, row in df.iterrows():
         document = Document(
             page_content=row["Title"] + " " + row["Review"],
-            metadata={
-                "rating": row["Rating"],
-                "date": row["Date"],
-                "id": str(i),
-            }
+            metadata={"rating": row["Rating"], "date": row["Date"]},
+            id=str(i)
         )
         ids.append(str(i))
         documents.append(document)
 
-vector_store = Chroma(
+    vector_store = Chroma(
     collection_name="restaurant_reviews",
-    embedding_function=embeddings,
     persist_directory=db_location,
-)
-
-if add_documents:
-    vector_store.add_documents(documents, ids=ids)
+    embedding_function=embeddings
+    )
+    vector_store.add_documents(documents=documents, ids=ids)
+    vector_store.persist()
+else:
+    vector_store = Chroma(
+        collection_name="restaurant_reviews",
+        persist_directory=db_location,
+        embedding_function=embeddings
+    )
 
 retriever = vector_store.as_retriever(
     search_kwargs={"k": 5}
